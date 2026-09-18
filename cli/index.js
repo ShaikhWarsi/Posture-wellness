@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * PostureAI — Command Line Interface (CLI)
+ * Posture Wellness — Command Line Interface (CLI)
  * Developed by: Shaikh Mohammad Warsi
  * 
  * Project: Computer Vision - Evaluated Project
@@ -154,7 +154,7 @@ const BENCHMARK_SUITE = [
 function printBanner() {
   console.log("");
   console.log(`${colors.cyan}${colors.bold}================================================================${colors.reset}`);
-  console.log(`${colors.cyan}${colors.bold}  POSTURE AI  --  COMPUTER VISION EVALUATION ENGINE             ${colors.reset}`);
+  console.log(`${colors.cyan}${colors.bold}  POSTURE WELLNESS -- COMPUTER VISION EVALUATION ENGINE         ${colors.reset}`);
   console.log(`${colors.cyan}${colors.bold}  Created & Developed by: Shaikh Mohammad Warsi                 ${colors.reset}`);
   console.log(`${colors.cyan}${colors.bold}  Academic Coursework: Computer Vision (Flipped Course)          ${colors.reset}`);
   console.log(`${colors.cyan}${colors.bold}================================================================${colors.reset}`);
@@ -273,7 +273,7 @@ function main() {
   if (args.includes("--author")) {
     printBanner();
     console.log("Author Name   : Shaikh Mohammad Warsi");
-    console.log("Project       : PostureAI - Computer Vision Evaluated Project");
+    console.log("Project       : Posture Wellness - Computer Vision Evaluated Project");
     console.log("Institution   : VITyarthi Flipped Course Evaluation");
     console.log("Deadline      : Sep 18, 2026, 11:59 PM");
     console.log("Technology    : TensorFlow.js, MoveNet SinglePose, Geometric Vector Analysis\n");

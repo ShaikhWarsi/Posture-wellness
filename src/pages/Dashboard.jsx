@@ -67,7 +67,7 @@ export default function Dashboard() {
         <div className="brand">
           <div className="brand-icon">🧘</div>
           <div>
-            <div className="brand-name">PostureAI</div>
+            <div className="brand-name">Posture Wellness</div>
             <div className="brand-tag">Engineered by <strong>Shaikh Mohammad Warsi</strong> · Computer Vision</div>
           </div>
         </div>

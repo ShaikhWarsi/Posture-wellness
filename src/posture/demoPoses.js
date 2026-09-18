@@ -1,5 +1,5 @@
 /**
- * PostureAI — Interactive Demo & Benchmark Poses
+ * Posture Wellness — Interactive Demo & Benchmark Poses
  * Developed by: Shaikh Mohammad Warsi
  * 
  * Provides calibrated landmark configurations for simulation mode,

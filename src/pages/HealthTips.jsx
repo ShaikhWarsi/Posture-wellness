@@ -198,7 +198,7 @@ export default function HealthTips() {
           <button className="ht-back-btn" onClick={() => navigate("/")}>
             ← DASHBOARD
           </button>
-          <span className="ht-nav-badge">POSTURE AI · HEALTH MODULE · SHAIKH MOHAMMAD WARSI</span>
+          <span className="ht-nav-badge">POSTURE WELLNESS · HEALTH MODULE · SHAIKH MOHAMMAD WARSI</span>
         </nav>
 
         {/* ── HERO ── */}

@@ -1,4 +1,4 @@
-# PostureAI - Real-Time Computer Vision Posture Assessment and Ergonomic Correction System
+# Posture Wellness - Real-Time Computer Vision Posture Assessment and Ergonomic Correction System
 
 Author: Shaikh Mohammad Warsi  
 Course: Computer Vision (Flipped Course Evaluation)  
@@ -12,7 +12,7 @@ Deadline: September 18, 2026
 
 Poor sitting ergonomics is one of the leading contributors to chronic cervical spine strain, trapezius fatigue, and repetitive stress injuries among students and computer professionals. When working for extended periods, the human cranium frequently drifts forward, the shoulders round upwards, and the torso collapses into a slouch.
 
-PostureAI is an on-device computer vision platform built by Shaikh Mohammad Warsi for the Computer Vision Flipped Course Evaluation. The system transforms any standard RGB laptop webcam into an automated, real-time biomechanical analysis station. It tracks 17 anatomical landmarks, measures multi-axial angular deviations and spatial asymmetries, and provides immediate visual and spoken feedback to correct posture habits.
+Posture Wellness is an on-device computer vision platform built by Shaikh Mohammad Warsi for the Computer Vision Flipped Course Evaluation. The system transforms any standard RGB laptop webcam into an automated, real-time biomechanical analysis station. It tracks 17 anatomical landmarks, measures multi-axial angular deviations and spatial asymmetries, and provides immediate visual and spoken feedback to correct posture habits.
 
 Crucially, the system requires no external cloud servers or proprietary hardware:
 - All neural inference and vector trigonometry execute strictly on the local client machine.
@@ -115,7 +115,7 @@ sequenceDiagram
 
 ## 4. Computer Vision and Mathematical Formulations
 
-Rather than relying on opaque downstream classifiers that obscure the decision logic, PostureAI pairs neural keypoint localization with explicit, deterministic vector geometry.
+Rather than relying on opaque downstream classifiers that obscure the decision logic, Posture Wellness pairs neural keypoint localization with explicit, deterministic vector geometry.
 
 ```
        Visual Geometry Coordinate System (Screen Space: Origin at Top-Left)
@@ -249,7 +249,7 @@ MoveNet SinglePose Lightning is an ultra-fast bottom-up keypoint regression netw
 
 ### 6.1 Keypoint Index Topology
 
-| Index | Keypoint Name | Anatomical Description | Usage in PostureAI |
+| Index | Keypoint Name | Anatomical Description | Usage in Posture Wellness |
 |:---:|:---|:---|:---|
 | 0 | nose | Cranial anchor point | Cervical vector angle, chin tuck measurement |
 | 1 | left_eye | Left ocular landmark | Facial plane visual alignment |
@@ -280,7 +280,7 @@ This yields smooth, continuous coordinate tracking that prevents visual jitter w
 
 ## 7. Dual Execution Guide
 
-To satisfy evaluation criteria, PostureAI is designed with two completely independent execution paths:
+To satisfy evaluation criteria, Posture Wellness is designed with two completely independent execution paths:
 1. Headless Terminal CLI Mode: Enables automated evaluation, accuracy benchmark testing, and mathematical inspection in terminal environments without requiring a browser or webcam.
 2. Web GUI Mode: An interactive, full-featured web application with live camera tracking, skeleton rendering, voice alerts, and an interactive simulation toolbar.
 
@@ -315,7 +315,7 @@ or:
 Terminal Output:
 
     ================================================================
-      POSTURE AI  --  COMPUTER VISION EVALUATION ENGINE             
+      POSTURE WELLNESS -- COMPUTER VISION EVALUATION ENGINE         
       Created & Developed by: Shaikh Mohammad Warsi                 
       Academic Coursework: Computer Vision (Flipped Course)          
     ================================================================
@@ -381,7 +381,7 @@ If you run the web application in an environment where:
 - Hardware acceleration / WebGL is disabled in the browser
 - The online MoveNet model weights cannot be fetched
 
-PostureAI automatically catches the condition, falls back to its CPU backend, and displays an on-screen Interactive Simulator toolbar directly beneath the camera display. This allows any evaluator to click through presets (Nominal Upright, Slouching, Forward Head, Head Tilted, Uneven Shoulders, Torso Leaning, Chin Tucked, Shoulders Raised) to inspect real-time canvas skeleton rendering, angle telemetry, and score updates without hardware barriers.
+Posture Wellness automatically catches the condition, falls back to its CPU backend, and displays an on-screen Interactive Simulator toolbar directly beneath the camera display. This allows any evaluator to click through presets (Nominal Upright, Slouching, Forward Head, Head Tilted, Uneven Shoulders, Torso Leaning, Chin Tucked, Shoulders Raised) to inspect real-time canvas skeleton rendering, angle telemetry, and score updates without hardware barriers.
 
 #### 3. Build for Production
 
@@ -481,7 +481,7 @@ Posture-wellness/
 
 ### WebGL Backend Unavailable Error
 If your browser console displays "Initialization of backend webgl failed: Error: WebGL is not supported on this device":
-- PostureAI automatically falls back to the CPU backend and interactive simulation mode.
+- Posture Wellness automatically falls back to the CPU backend and interactive simulation mode.
 - To re-enable WebGL hardware acceleration in Google Chrome or Microsoft Edge, visit:
   `chrome://settings/system` (or `edge://settings/system`) and toggle "Use hardware acceleration when available" to ON, then restart the browser.
 

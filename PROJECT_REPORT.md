@@ -12,9 +12,9 @@ System Implementation: Dual-Execution Architecture (Headless Terminal CLI and In
 
 ## Abstract
 
-Prolonged computer usage in improper ergonomic postures is a primary etiology of musculoskeletal disorders, including cervical spondylosis, trapezius myofascial pain syndrome, and forward head posture. This report presents PostureAI, an edge-computed computer vision system designed and developed by Shaikh Mohammad Warsi for the Computer Vision Flipped Course Evaluation on the VITyarthi platform.
+Prolonged computer usage in improper ergonomic postures is a primary etiology of musculoskeletal disorders, including cervical spondylosis, trapezius myofascial pain syndrome, and forward head posture. This report presents Posture Wellness, an edge-computed computer vision system designed and developed by Shaikh Mohammad Warsi for the Computer Vision Flipped Course Evaluation on the VITyarthi platform.
 
-The system localizes 17 anatomical landmarks in real time from standard RGB video frames using a convolutional pose estimation network (MoveNet SinglePose Lightning) and evaluates posture through deterministic vector trigonometry. The pipeline classifies 7 distinct sitting posture anomalies alongside normal upright alignment. To satisfy evaluation criteria regarding executability and platform independence, PostureAI provides two distinct operating modes: a zero-dependency headless Command Line Interface (CLI) engine designed for automated terminal grading, and an interactive browser-based web application with real-time canvas skeleton overlays, live telemetry, and spoken audio coaching. All computation is executed locally without transmitting video or biometric data to external servers.
+The system localizes 17 anatomical landmarks in real time from standard RGB video frames using a convolutional pose estimation network (MoveNet SinglePose Lightning) and evaluates posture through deterministic vector trigonometry. The pipeline classifies 7 distinct sitting posture anomalies alongside normal upright alignment. To satisfy evaluation criteria regarding executability and platform independence, Posture Wellness provides two distinct operating modes: a zero-dependency headless Command Line Interface (CLI) engine designed for automated terminal grading, and an interactive browser-based web application with real-time canvas skeleton overlays, live telemetry, and spoken audio coaching. All computation is executed locally without transmitting video or biometric data to external servers.
 
 ---
 
@@ -34,7 +34,7 @@ Existing commercial solutions suffer from distinct operational trade-offs:
 - Cloud-Based Webcam Utilities: Introduce network latency, consume significant uplink bandwidth, and raise severe privacy concerns by transmitting private camera feeds over the internet.
 
 ### 1.3 Proposed Computer Vision Solution
-PostureAI addresses these limitations by performing entirely on-device inference using standard RGB webcams. The system captures video frames locally, extracts 2D skeletal landmarks via deep learning, calculates geometric orientation angles and bilateral spatial disparities, and alerts the user through visual telemetry and spoken cues.
+Posture Wellness addresses these limitations by performing entirely on-device inference using standard RGB webcams. The system captures video frames locally, extracts 2D skeletal landmarks via deep learning, calculates geometric orientation angles and bilateral spatial disparities, and alerts the user through visual telemetry and spoken cues.
 
 ---
 
@@ -65,7 +65,7 @@ The system integrates theoretical principles and practical methods across the fi
 
       r = x * cos(theta) + y * sin(theta)
 
-- PostureAI adapts this line-fitting philosophy to anatomical keypoint arrays:
+- Posture Wellness adapts this line-fitting philosophy to anatomical keypoint arrays:
   * Bi-Acromial Shoulder Axis: Modeled as a fitted horizontal line segment between left and right shoulder landmarks.
   * Cervical Axis: Modeled as a directional line segment connecting the acromial midpoint to the cranial anchor (nose).
   * Torso Midline: Modeled as a line connecting the acromial midpoint to the pelvic midpoint.
@@ -84,7 +84,7 @@ The system integrates theoretical principles and practical methods across the fi
 
 ## 3. System Architecture and Pipeline
 
-The following flowchart illustrates the functional architecture of PostureAI, from frame ingestion to neural extraction, geometric filtering, and dual output delivery:
+The following flowchart illustrates the functional architecture of Posture Wellness, from frame ingestion to neural extraction, geometric filtering, and dual output delivery:
 
 ```mermaid
 flowchart TD
@@ -366,7 +366,7 @@ Posture-wellness/
 ## 7. Dual Execution and Operational Validation
 
 ### 7.1 Terminal CLI Mode (Headless Automated Evaluation)
-The project provides complete CLI executability via [`cli/index.js`](file:///c:/Users/Mohammad/OneDrive/Desktop/All%20my%20projects/PostureAI-Hackathon-main/cli/index.js). Evaluators can test the entire computer vision geometry engine without a browser:
+The project provides complete CLI executability via [`cli/index.js`](./cli/index.js). Evaluators can test the entire computer vision geometry engine without a browser:
 
 #### 1. Automated Verification Benchmark
 
@@ -379,7 +379,7 @@ or:
 Terminal Output:
 
     ================================================================
-      POSTURE AI  --  COMPUTER VISION EVALUATION ENGINE             
+      POSTURE WELLNESS -- COMPUTER VISION EVALUATION ENGINE         
       Created & Developed by: Shaikh Mohammad Warsi                 
       Academic Coursework: Computer Vision (Flipped Course)          
     ================================================================
@@ -489,7 +489,7 @@ Testing was performed across multiple hardware environments to measure latency, 
 
 ## 9. Conclusion
 
-PostureAI demonstrates the practical application of computer vision to personal ergonomic health. By synthesizing spatial gradient feature extraction, geometric line modeling, and deep pose landmark regression, the system provides accurate, sub-millisecond posture feedback.
+Posture Wellness demonstrates the practical application of computer vision to personal ergonomic health. By synthesizing spatial gradient feature extraction, geometric line modeling, and deep pose landmark regression, the system provides accurate, sub-millisecond posture feedback.
 
 Crucially, the dual-execution architecture satisfies all evaluation criteria established by the VITyarthi platform:
 - Full command-line executability without requiring graphical displays or webcams.

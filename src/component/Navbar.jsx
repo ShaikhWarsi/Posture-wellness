@@ -15,7 +15,7 @@ const Navbar = () => {
       <div className="nav-brand-pill">
         <div className="nav-brand-dot" />
         <div className="nav-brand-texts">
-          <span className="nav-brand-name">PostureAI</span>
+          <span className="nav-brand-name">Posture Wellness</span>
           <span className="nav-brand-author">by <strong>Shaikh Mohammad Warsi</strong></span>
         </div>
       </div>

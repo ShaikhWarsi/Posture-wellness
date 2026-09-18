@@ -29,7 +29,7 @@ export default function SessionSummary({ stats, onClose, onExport }) {
         <button className="ss-close" onClick={onClose}>×</button>
 
         <div className="ss-header">
-          <div className="ss-author-tag">PostureAI Assessment • Shaikh Mohammad Warsi</div>
+          <div className="ss-author-tag">Posture Wellness Assessment • Shaikh Mohammad Warsi</div>
           <div className="ss-title">Session Assessment Complete</div>
           <div className="ss-subtitle">{getSubtitle(stats.avgScore)}</div>
         </div>

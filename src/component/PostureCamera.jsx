@@ -174,10 +174,10 @@ export default function PostureCamera({ isPaused, isFullscreen }) {
           try {
             await tf.setBackend(b);
             await tf.ready();
-            console.log(`PostureAI: Initialized TensorFlow.js with '${b}' backend`);
+            console.log(`Posture Wellness: Initialized TensorFlow.js with '${b}' backend`);
             break;
           } catch (backendErr) {
-            console.warn(`PostureAI: Backend '${b}' not available:`, backendErr?.message || backendErr);
+            console.warn(`Posture Wellness: Backend '${b}' not available:`, backendErr?.message || backendErr);
           }
         }
 
@@ -197,7 +197,7 @@ export default function PostureCamera({ isPaused, isFullscreen }) {
         sessionTracker.reset();
         detect(detector);
       } catch (err) {
-        console.warn("PostureAI live camera notice:", err?.message || err);
+        console.warn("Posture Wellness live camera notice:", err?.message || err);
         const isFetch = err?.message?.includes("Failed to fetch");
         const msg = isFetch
           ? "MoveNet online model weights unreachable or offline. Running in Evaluation Simulator mode."

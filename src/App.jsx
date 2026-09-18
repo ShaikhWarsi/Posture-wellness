@@ -17,7 +17,7 @@ function App() {
         <footer className="app-footer">
           <div className="footer-inner">
             <div className="footer-main">
-              <span className="footer-lead">PostureAI</span>
+              <span className="footer-lead">Posture Wellness</span>
               <span className="footer-divider">/</span>
               <span>Engineered & Developed by <strong>Shaikh Mohammad Warsi</strong></span>
             </div>
