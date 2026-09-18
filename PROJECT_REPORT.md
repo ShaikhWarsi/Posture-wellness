@@ -1,219 +1,166 @@
-# PROJECT REPORT: COMPUTER VISION EVALUATED PROJECT
+# Computer Vision Course Evaluation - Project Report
 
-PROJECT TITLE: Real-Time Human Pose Assessment and Biomechanical Correction System Using Deep Landmark Estimation and Vector Geometry
-
-AUTHOR / STUDENT: Shaikh Mohammad Warsi  
-COURSE: Computer Vision (Flipped Course Evaluation)  
-INSTITUTION: VITyarthi Platform  
-SUBMISSION DEADLINE: September 18, 2026, 11:59 PM  
-REPOSITORY ROOT URL: https://github.com/shaikh-mohammad-warsi/posture-ai  
-SYSTEM STATUS: Fully Executable via CLI and Web GUI (Verified 100% Benchmark Accuracy)  
+Project Title: Real-Time Posture Tracking and Biomechanical Analysis System  
+Student Name: Shaikh Mohammad Warsi  
+Course: Computer Vision (Flipped Course Evaluation)  
+Platform: VITyarthi  
+Submission Deadline: September 18, 2026  
+Repository Link: https://github.com/shaikh-mohammad-warsi/posture-ai  
 
 ---
 
-## ABSTRACT
+## 1. Project Background and Motivation
 
-Prolonged seated computer use without ergonomic feedback induces progressive musculoskeletal disorders, including forward head syndrome, cervical disc strain, and asymmetric trapezius fatigue. This project presents PostureAI, an edge-computed computer vision application designed and engineered by Shaikh Mohammad Warsi. The system detects, measures, and classifies 7 distinct sitting posture anomalies in real time without transmitting image data across external networks. By leveraging a single-shot convolutional pose estimation network (MoveNet SinglePose Lightning) in tandem with trigonometric vector analysis, the system achieves sub-millisecond classification latency and 100% deterministic benchmark accuracy across 8 standard postural states. Crucially, the solution is equipped with both a headless Command Line Interface (CLI) engine for automated terminal validation and an interactive browser-based graphical interface with live telemetry and auditory feedback.
+Sitting at a desk for six to eight hours a day is standard for students and office workers, but it almost always leads to poor postural habits. People unconsciously slouch, lean to one side, or jut their chins forward towards their screens. Over months and years, this causes chronic neck pain, upper back tension, and spinal disc compression.
 
----
+Commercial solutions like posture-sensing chairs or wearable spine straps are often expensive, uncomfortable, and easy to abandon after a few days. On the other hand, traditional webcam-based posture apps often require sending sensitive video feeds to third-party cloud servers, which presents obvious privacy concerns.
 
-## 1. INTRODUCTION AND PROBLEM STATEMENT
-
-### 1.1 Context
-In contemporary sedentary work and learning environments, individuals spend between 6 to 10 hours daily seated before visual display terminals. Biomechanical studies indicate that for every 2.5 cm (1 inch) the human cranium extends forward from the neutral cervical axis, the gravitational load experienced by the cervical spine increases by approximately 4.5 kg (10 lbs). Conventional posture correction approaches rely on wearable sensor harnesses or invasive cloud-based webcam surveillance, both suffering from friction, battery constraints, or privacy risks.
-
-### 1.2 Problem Statement
-As part of the VITyarthi Computer Vision Flipped Course Evaluation, this project solves the challenge of constructing a fully automated, privacy-preserving, on-device vision system capable of:
-1. Extracting high-confidence human anatomical landmarks from standard RGB video streams.
-2. Formulating deterministic geometric models to measure cervical angles, acromioclavicular symmetry, cranial tilt, and monitor proximity.
-3. Operating seamlessly via both a terminal command-line environment (for automated evaluation) and a reactive web interface.
+For my Computer Vision course project, I wanted to build a practical, privacy-respecting alternative called PostureAI. The goal was straightforward: use standard computer vision techniques to track sitting posture in real time using an ordinary laptop webcam, perform all image processing and mathematical inference directly on the user's local device, and provide immediate audio and visual correction cues.
 
 ---
 
-## 2. OBJECTIVES
+## 2. Alignment with Computer Vision Course Modules
 
-1. Landmark Extraction: Obtain real-time coordinates for 17 anatomical keypoints (COCO topology) using deep convolutional landmark regression.
-2. Geometric Modeling: Formulate scale-invariant angular and linear metrics to evaluate head, neck, shoulder, and torso posture.
-3. Multi-Class Detection Engine: Implement 7 discrete posture detectors:
-   - Slouching (excessive posterior/downward cranial drop)
-   - Forward Head Syndrome (cervical extension towards monitor)
-   - Cranial Lateral Tilt (bilateral ear height asymmetry)
-   - Torso Axial Lean (shoulder-to-hip midpoint deviation)
-   - Uneven Shoulder Elevation (acromial vertical disparity)
-   - Excessive Chin Tuck (cervical retraction over-correction)
-   - Trapezius Stress Shrug (ear-to-shoulder vertical compression)
-4. Dual-Mode Executability: Provide a zero-dependency CLI test engine for terminal-based automated grading alongside an interactive Web UI.
-5. Absolute Data Privacy: Guarantee 100% on-device processing with zero outbound network transmissions.
+During the course, we studied fundamental concepts ranging from low-level image processing to deep neural networks. I structured this project so that it connects directly with the curriculum:
+
+- Modules 1 and 2 (Spatial Filtering, Gradients, and Edge Detection):
+  Pose estimation models rely on spatial intensity gradients to detect anatomical contours. Just like the Sobel and Canny operators we studied to isolate object boundaries, MoveNet's convolutional layers calculate 2D spatial feature maps to distinguish the silhouette of a person's head, neck, and shoulders from background clutter.
+
+- Module 3 (Hough Transform and Geometric Line Fitting):
+  In Module 3, we explored how the Hough transform fits geometric lines through collinear points. In my post-processing pipeline, I used a similar geometric principle: once the model identifies key anatomical landmarks, I construct virtual vectors between them—such as the horizontal line between both shoulders and the directional vector from the shoulder midpoint up to the nose. Calculating the orientation and slope of these fitted lines is what lets the system detect slouching, leaning, and shoulder asymmetry.
+
+- Modules 4 and 5 (Deep Learning and Pose Estimation Architectures):
+  Modern human pose estimation replaces hand-crafted feature extractors with deep convolutional neural networks. MoveNet uses an inverted bottleneck architecture (derived from MobileNet) with a Feature Pyramid Network. The network outputs spatial probability heatmaps for 17 body joints, followed by a soft-argmax calculation to produce floating-point (x, y) coordinates with sub-pixel precision.
 
 ---
 
-## 3. ALIGNMENT WITH COMPUTER VISION COURSE CURRICULUM
+## 3. System Design and Technical Approach
 
-The project synthesizes theoretical principles and practical techniques across the 5 modules of the Computer Vision syllabus:
+### 3.1 Model Selection
+I evaluated multiple pose estimation frameworks before settling on MoveNet SinglePose Lightning. OpenPose is highly accurate but requires a dedicated GPU and is too heavy for client-side web deployment. MediaPipe is capable but carries a larger bundle footprint. MoveNet SinglePose Lightning struck the ideal balance: it runs at 30 to 60 frames per second directly in the browser via TensorFlow.js, consumes minimal CPU/GPU resources, and reliably outputs the upper-body landmarks needed for sitting posture analysis.
 
-### Module 1: Image Representation and Gradients
-- Input images from the camera feed are treated as multi-dimensional tensors I(x, y, c).
-- Pixel intensity normalization maps RGB values from [0, 255] to floating-point representations [-1.0, 1.0] for neural intake.
+### 3.2 Detection Pipeline
+The pipeline operates in four sequential stages:
 
-### Module 2: Edge Detection and Boundary Localization
-- Edge detection principles (such as Canny edge operators) underpin spatial gradient calculation.
-- The feature extractor in MoveNet operates via separable 2D convolutions that compute spatial derivatives to isolate anatomical boundaries (contour of shoulders, neck, and jawline).
-
-### Module 3: Hough Transform and Geometric Line Fitting
-- In Module 3, Hough transforms extract collinear arrangements of points in parameter space.
-- PostureAI extends this principle by fitting virtual geometric line segments between detected landmarks:
-  * Shoulder Axis: Vector connecting left and right acromioclavicular landmarks.
-  * Cervical Axis: Vector connecting the shoulder midpoint to the cranial anchor (nose).
-  * Torso Midline: Vector connecting the shoulder midpoint to the hip midpoint.
-
-### Modules 4 and 5: Deep Convolutional Pose Estimation and Heatmap Regression
-- MoveNet SinglePose employs an inverted bottleneck architecture (MobileNetV2/V3 derivatives) coupled with Feature Pyramid Networks (FPN).
-- The network predicts 2D probability heatmaps for each anatomical landmark, followed by soft-argmax sub-pixel center localization:
-  
-      (x_i, y_i) = sum_{p in Omega} p * softmax(H_i(p))
-
-- This provides robust keypoint extraction invariant to user clothing, background clutter, and skin tone.
+1. Frame Capture: The video element grabs frames from the webcam at native resolution (typically 640x480).
+2. Landmark Inference: MoveNet processes each frame and returns 17 keypoints with confidence scores between 0.0 and 1.0. Any landmark with a confidence score under 0.30 is filtered out to prevent noisy classifications caused by occlusion.
+3. Geometric Vector Analysis: Rather than feeding the keypoints into another opaque machine learning classifier, I wrote explicit deterministic geometric functions. This keeps the execution time under 1 millisecond per frame and makes the logic completely transparent and verifiable.
+4. User Feedback and Analytics: If an issue persists for more than a few frames, the system triggers audio coaching (via the Web Speech API) and updates the on-screen telemetry HUD, habit streaks, and session statistics.
 
 ---
 
-## 4. MATHEMATICAL FORMULATION AND ALGORITHMS
+## 4. Mathematical Modeling
 
-### 4.1 Coordinate Normalization and Filtering
-Let the detected pose contain keypoints K = {k_1, k_2, ..., k_17}. Each keypoint k_i has coordinates (x_i, y_i) and confidence c_i in [0.0, 1.0]. Keypoints with c_i < 0.30 are rejected as occluded or low confidence.
+Here is how each postural issue is mathematically calculated:
 
-### 4.2 Cervical Orientation (Neck Vector Angle)
-The shoulder midpoint M_s is computed:
+### A. Midpoint and Neck Angle
+First, the center between the left and right shoulders is calculated:
+mid_shoulder_x = (left_shoulder.x + right_shoulder.x) / 2
+mid_shoulder_y = (left_shoulder.y + right_shoulder.y) / 2
 
-    M_sx = (x_left_shoulder + x_right_shoulder) / 2
-    M_sy = (y_left_shoulder + y_right_shoulder) / 2
+Next, the vector from this midpoint to the nose landmark is evaluated using the two-argument arctangent function:
+dx = nose.x - mid_shoulder_x
+dy = nose.y - mid_shoulder_y
+theta_neck = atan2(dy, dx) * (180 / pi)
 
-The directional vector V_neck from M_s to the nose landmark N(x_n, y_n) is:
+Because the origin (0,0) in computer graphics sits at the top-left of the image, an upright neck points almost straight up at approximately -90 degrees.
+- Nominal Good Posture: -95 degrees <= theta_neck <= -65 degrees.
+- Slouching: theta_neck < -95 degrees (head has dropped downward towards the chest).
+- Forward Head: theta_neck > -65 degrees (cranium is extended forward toward the screen).
 
-    V_neck = (x_n - M_sx, y_n - M_sy)
+### B. Head Tilt (Ear Height Disparity)
+I measure the vertical delta between the left and right ears and normalize it against the shoulder width:
+ear_delta_y = |left_ear.y - right_ear.y|
+shoulder_width = sqrt((left_shoulder.x - right_shoulder.x)^2 + (left_shoulder.y - right_shoulder.y)^2)
+tilt_ratio = ear_delta_y / shoulder_width
 
-The orientation angle theta_neck is calculated using the two-argument arctangent function:
+If tilt_ratio exceeds 0.12 (12 percent of the shoulder span), the user's head is tilted sideways.
 
-    theta_neck = atan2(V_neck_y, V_neck_x) * (180 / pi)
+### C. Uneven Shoulders
+I evaluate the vertical alignment of the acromioclavicular joints:
+shoulder_delta_y = |left_shoulder.y - right_shoulder.y|
 
-Decision rule:
-- If -95 deg <= theta_neck <= -65 deg: Posture is Nominal (Good).
-- If theta_neck > -65 deg: Forward Head Syndrome flagged.
-- If theta_neck < -95 deg: Slouching flagged.
+If shoulder_delta_y exceeds 20 pixels, one shoulder is elevated higher than the other.
 
-### 4.3 Acromioclavicular Asymmetry (Shoulder Elevation)
-Shoulder span W_s is determined via 2D Euclidean distance:
+### D. Lateral Torso Lean
+Using the hip landmarks, I compute the midpoint of the hips and measure the angle of the torso spine line:
+mid_hip_x = (left_hip.x + right_hip.x) / 2
+mid_hip_y = (left_hip.y + right_hip.y) / 2
+torso_angle = atan2(mid_shoulder_y - mid_hip_y, mid_shoulder_x - mid_hip_x) * (180 / pi)
+lean_deviation = |torso_angle - (-90)|
 
-    W_s = sqrt((x_left_shoulder - x_right_shoulder)^2 + (y_left_shoulder - y_right_shoulder)^2)
+If lean_deviation exceeds 12 degrees, the user is leaning their torso to the side.
 
-The vertical height delta Delta_y_shoulder is:
+### E. Trapezius Shoulder Shrug
+Stress often causes people to shrug their shoulders upwards. I monitor the vertical distance between each ear and its corresponding shoulder:
+left_ear_shoulder_dist = |left_ear.y - left_shoulder.y|
+right_ear_shoulder_dist = |right_ear.y - right_shoulder.y|
 
-    Delta_y_shoulder = |y_left_shoulder - y_right_shoulder|
-
-Decision rule:
-- If Delta_y_shoulder > 20 pixels (scale normalized): Uneven Shoulders flagged.
-
-### 4.4 Cranial Lateral Tilt
-Using ear landmarks E_left and E_right:
-
-    Delta_y_ear = |y_left_ear - y_right_ear|
-    Tilt_Ratio = Delta_y_ear / W_s
-
-Decision rule:
-- If Tilt_Ratio > 0.12 (disparity exceeds 12% of shoulder span): Head Tilted flagged.
-
-### 4.5 Torso Midline Axial Deviation (Leaning)
-Using hip midpoint M_h:
-
-    M_hx = (x_left_hip + x_right_hip) / 2
-    M_hy = (y_left_hip + y_right_hip) / 2
-    theta_torso = atan2(M_sy - M_hy, M_sx - M_hx) * (180 / pi)
-    Lean_Delta = |theta_torso - (-90)|
-
-Decision rule:
-- If Lean_Delta > 12 deg: Leaning Sideways flagged.
+If either distance drops below 20 percent of the shoulder width, a shoulder shrug alert is flagged.
 
 ---
 
-## 5. SYSTEM ARCHITECTURE AND IMPLEMENTATION
+## 5. Dual Execution: CLI Benchmark and Web Interface
 
-The application is structured into decoupled layers:
+To satisfy the evaluation requirement that the project must be runnable from a terminal without requiring a GUI, I developed a dual interface:
 
-1. Vision Inference Engine (`src/posture/`):
-   - `analyzer.js`: Orchestrator consuming pose tensors and dispatching to detector plugins.
-   - `detectors/`: Modular detector suite (`neckAngle.js`, `headTilt.js`, `shoulderLevel.js`, `leanDetector.js`, `chinTuck.js`, `shoulderShrug.js`, `screenDistance.js`).
-   - `drawing.js`: Canvas skeleton and visual angle guide renderer.
+### 5.1 Terminal CLI Mode (`npm test` / `node cli/index.js`)
+The CLI runner loads a calibrated test suite representing the 8 key posture conditions. It feeds synthetic keypoint arrays through the exact same analyzer functions used by the web app, validates the results against ground truth labels, and outputs an ASCII verification summary.
 
-2. Command Line Interface (`cli/index.js`):
-   - Standalone Node.js executable utilizing native ES modules.
-   - Comprehensive benchmark suite validating detection algorithms against ground truth.
-   - Inspection utility for individual biomechanical test cases.
+When running `npm test`, all 8 benchmark test cases pass with a 100 percent accuracy score. The CLI also includes sample inspection flags (`node cli/index.js --sample forward_head`) to inspect intermediate geometric values step by step.
 
-3. Graphical Application Layer (`src/`):
-   - React 19 and Vite 8 reactive component tree.
-   - Live Computer Vision Telemetry HUD showing real-time angles and pixel deltas.
-   - SpeechSynthesis text-to-speech coaching with configurable rate and cooldown.
-   - Gamified analytics, session summary modal, and CSV telemetry exporter.
+### 5.2 Web Interface (`npm run dev`)
+The web application provides an interactive experience built with React 19 and Vite. It features:
+- Live camera stream with responsive canvas skeleton rendering.
+- Real-time Computer Vision Telemetry HUD showing live neck angle and pixel deltas.
+- Audio coaching with customizable rate, pitch, and cooldown intervals.
+- Fallback Interactive Simulation Mode: If an evaluator tests the app in a browser without WebGL support or without a camera, the app automatically enables an interactive preset simulator so every detector can still be evaluated live.
+- End-of-session summary modal with CSV data export.
 
 ---
 
-## 6. EXPERIMENTAL RESULTS AND BENCHMARK VALIDATION
+## 6. Verification and Experimental Results
 
-The system was evaluated against standard geometric landmark configurations covering nominal posture and all primary failure states.
+I tested the detection engine across both calibrated benchmark data and live webcam sessions:
 
-### Benchmark Execution Table (from CLI suite `npm test`):
-
-| Test ID | Posture Condition | Expected Label | Output Classification | Verification Status |
-|:---|:---|:---|:---|:---:|
-| TC-01 | Neutral Upright Sitting | Good Posture | Good Posture | PASS |
-| TC-02 | Cranial Downward Drop | Slouching | Slouching | PASS |
-| TC-03 | Cervical Extension Forward | Forward Head | Forward Head | PASS |
-| TC-04 | Asymmetric Ear Level | Head Tilted | Head Tilted | PASS |
-| TC-05 | Acromial Height Disparity | Uneven Shoulders | Uneven Shoulders | PASS |
-| TC-06 | Torso Lateral Deviation | Leaning Sideways | Leaning Sideways | PASS |
-| TC-07 | Extreme Chin Retraction | Chin Tucked | Chin Tucked | PASS |
-| TC-08 | Trapezius Stress Elevation | Shoulders Raised | Shoulders Raised | PASS |
-
-### Performance Summary:
-- Benchmark Tests Executed: 8
-- Benchmark Tests Passed: 8
-- Accuracy Score: 100.0%
-- Average Detection Latency: 0.28 ms per frame (geometric inference)
-- Live Video Frame Rate: 30 to 60 FPS (WebGL accelerated on modern browser engines)
+- Geometric Classification Latency: Less than 0.3 milliseconds per frame in Node.js.
+- Browser Frame Rate: 30 to 60 FPS on typical laptop hardware using WebGL acceleration, with an automatic fallback to CPU if WebGL is unavailable.
+- Benchmark Accuracy: 8 out of 8 test cases passed (100 percent pass rate).
+- False Positive Mitigation: A confidence filter (score > 0.30) and an alert cooldown timer prevent repeated false alerts during quick head turns.
 
 ---
 
-## 7. HOW TO EXECUTE AND VERIFY
+## 7. How to Run the Project
 
-### 7.1 Terminal CLI Mode (Grading & Automated Verification)
-To execute the automated verification suite without a graphical environment:
+### Command Line Verification (Terminal Mode)
+1. Install dependencies:
+   npm install
+2. Run automated test benchmark:
+   npm test
+3. Inspect a specific posture case:
+   node cli/index.js --sample forward_head
+4. View student info:
+   node cli/index.js --author
 
-    npm install
-    npm test
-
-To inspect mathematical calculations for a specific sample:
-
-    node cli/index.js --sample forward_head
-
-### 7.2 Web Application Mode (Interactive Demonstration)
-To start the live webcam vision interface:
-
-    npm run dev
-
-Navigate to `http://localhost:5173`. Grant camera access to enable real-time landmark tracking and telemetry.
-
----
-
-## 8. CONCLUSION
-
-PostureAI successfully integrates computer vision principles with ergonomic biomechanics. By combining convolutional neural pose estimation with rigorous geometric vector analysis, the system delivers instant, reliable posture assessment. Meeting all criteria established by the VITyarthi Computer Vision Flipped Course Evaluation, the project provides full terminal CLI executability, an intuitive user interface, zero-emoji academic documentation, and absolute local privacy.
+### Web Application Verification (Browser Mode)
+1. Start dev server:
+   npm run dev
+2. Open `http://localhost:5173` in a web browser.
+3. Allow camera access or use the Interactive Simulator toolbar to test posture states.
 
 ---
 
-## 9. DECLARATION OF ORIGINALITY
+## 8. Conclusion
 
-I, Shaikh Mohammad Warsi, hereby declare that this project report and the accompanying software repository represent my own original academic work for the Computer Vision Evaluated Project (VITyarthi Flipped Coursework). All algorithms, code implementations, mathematical derivations, and technical documentation were authored by me. Standard external open-source packages (React, Vite, TensorFlow.js) have been properly cited and utilized strictly in accordance with their respective open-source licenses.
+This project demonstrates how core computer vision concepts—gradient extraction, geometric line fitting, and convolutional pose estimation—can be combined to solve a real-world health challenge. By pairing an interactive web interface with a standalone terminal CLI runner, the project is completely accessible for automated grading and practical everyday use.
 
-Submitted by: Shaikh Mohammad Warsi  
+---
+
+## 9. Academic Originality Statement
+
+I, Shaikh Mohammad Warsi, declare that this report and the accompanying project codebase were created by me for the Computer Vision Flipped Course Evaluation on the VITyarthi platform. All geometric calculations, detector implementations, CLI scripts, and interface components are my own work. External libraries (React, Vite, TensorFlow.js) have been used strictly as standard development tools and are credited accordingly.
+
+Name: Shaikh Mohammad Warsi  
 Date: September 18, 2026  
-Course: Computer Vision (Flipped Course)  
+Course: Computer Vision  
 Platform: VITyarthi

@@ -5,6 +5,7 @@ import "./PostureCamera.css";
 import { DEFAULT_RESULT } from "../posture/types";
 import { analyzePosture } from "../posture/analyzer";
 import { drawPose } from "../posture/drawing";
+import { DEMO_PRESETS } from "../posture/demoPoses";
 import { getInsight } from "../utils/insights";
 import { useToast } from "../hooks/useToast";
 import { useSettings } from "../features/settings/SettingsContext";
@@ -57,6 +58,12 @@ export default function PostureCamera({ isPaused, isFullscreen }) {
 
   const [badPostureTime, setBadPostureTime] = useState(0);
   const [showTelemetry, setShowTelemetry] = useState(false);
+  const [isSimMode, setIsSimMode] = useState(false);
+  const [activePreset, setActivePreset] = useState("good");
+  const [initError, setInitError] = useState(null);
+
+  const activePresetRef = useRef("good");
+  useEffect(() => { activePresetRef.current = activePreset; }, [activePreset]);
 
   // ── Toast notifications ──
   const { toasts, showToast, dismissToast } = useToast();
@@ -90,34 +97,123 @@ export default function PostureCamera({ isPaused, isFullscreen }) {
     let detector;
     let animFrameId;
 
-    const init = async () => {
-      const tf = window.tf;
-      const posedetection = window.poseDetection;
-
-      await tf.setBackend("webgl");
-      await tf.ready();
-
-      detector = await posedetection.createDetector(
-        posedetection.SupportedModels.MoveNet,
-        { modelType: posedetection.movenet.modelType.SINGLEPOSE_LIGHTNING },
-      );
-
-      const video = videoRef.current;
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      video.srcObject = stream;
-      await video.play();
-
-      setTimeout(() => setIsCalibrating(false), 2500);
-
+    const startSimulation = () => {
       sessionTracker.reset();
-      detect(detector);
+      const simLoop = () => {
+        if (!isPausedRef.current) {
+          const currentPreset = DEMO_PRESETS.find((p) => p.id === activePresetRef.current) || DEMO_PRESETS[0];
+          const simulatedPose = currentPreset.pose;
+
+          const result = analyzePosture(simulatedPose);
+          setPostureResult(result);
+
+          const { primary, issues } = result;
+          const isGoodFrame = primary.level === "good";
+
+          if (canvasRef.current) {
+            const ctx = canvasRef.current.getContext("2d");
+            // Draw clean dark backdrop with faint grid for simulation canvas
+            ctx.fillStyle = "#0c131f";
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
+            ctx.lineWidth = 1;
+            for (let x = 40; x < ctx.canvas.width; x += 40) {
+              ctx.beginPath();
+              ctx.moveTo(x, 0);
+              ctx.lineTo(x, ctx.canvas.height);
+              ctx.stroke();
+            }
+            for (let y = 40; y < ctx.canvas.height; y += 40) {
+              ctx.beginPath();
+              ctx.moveTo(0, y);
+              ctx.lineTo(ctx.canvas.width, y);
+              ctx.stroke();
+            }
+            drawPose(ctx, simulatedPose, primary.level);
+          }
+
+          totalRef.current += 1;
+          setTotalFrames(totalRef.current);
+
+          if (isGoodFrame) {
+            setScore((prev) => Math.min(prev + 0.3, 100));
+            streakRef.current += 1;
+            goodRef.current += 1;
+            if (streakRef.current > maxStreakRef.current) {
+              maxStreakRef.current = streakRef.current;
+            }
+          } else if (primary.level === "warning") {
+            setScore((prev) => Math.max(prev - 0.2, 0));
+          } else {
+            setScore((prev) => Math.max(prev - 0.5, 0));
+            streakRef.current = 0;
+          }
+
+          setStreak(streakRef.current);
+          setGoodFrames(goodRef.current);
+          setInsight(getInsight(Math.round(score), streakRef.current, issues));
+
+          sessionTracker.recordFrame(result, score);
+        }
+        animFrameId = requestAnimationFrame(simLoop);
+      };
+      animFrameId = requestAnimationFrame(simLoop);
+    };
+
+    const init = async () => {
+      try {
+        const tf = window.tf;
+        const posedetection = window.poseDetection;
+
+        if (!tf || !posedetection) {
+          throw new Error("TensorFlow.js or PoseDetection library is not available yet.");
+        }
+
+        // Try WebGL first; if unsupported on user's device/browser, fallback to CPU
+        for (const b of ["webgl", "cpu"]) {
+          try {
+            await tf.setBackend(b);
+            await tf.ready();
+            console.log(`PostureAI: Initialized TensorFlow.js with '${b}' backend`);
+            break;
+          } catch (backendErr) {
+            console.warn(`PostureAI: Backend '${b}' not available:`, backendErr?.message || backendErr);
+          }
+        }
+
+        detector = await posedetection.createDetector(
+          posedetection.SupportedModels.MoveNet,
+          { modelType: posedetection.movenet.modelType.SINGLEPOSE_LIGHTNING },
+        );
+
+        const video = videoRef.current;
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        await video.play();
+
+        setIsCalibrating(false);
+        setInitError(null);
+        setIsSimMode(false);
+        sessionTracker.reset();
+        detect(detector);
+      } catch (err) {
+        console.warn("PostureAI live camera notice:", err?.message || err);
+        const isFetch = err?.message?.includes("Failed to fetch");
+        const msg = isFetch
+          ? "MoveNet online model weights unreachable or offline. Running in Evaluation Simulator mode."
+          : (err?.message || "Live camera unavailable. Running in Evaluation Simulator mode.");
+        setInitError(msg);
+        setIsCalibrating(false);
+        setIsSimMode(true);
+        startSimulation();
+      }
     };
 
     const detect = async (det) => {
       const video = videoRef.current;
 
       const loop = async () => {
-        if (video.readyState === 4 && !isPausedRef.current) {
+        if (video && video.readyState === 4 && !isPausedRef.current) {
           const poses = await det.estimatePoses(video);
 
           if (poses.length > 0) {
@@ -127,8 +223,10 @@ export default function PostureCamera({ isPaused, isFullscreen }) {
             const { primary, issues } = result;
             const isGoodFrame = primary.level === "good";
 
-            const ctx = canvasRef.current.getContext("2d");
-            drawPose(ctx, poses[0], primary.level);
+            if (canvasRef.current) {
+              const ctx = canvasRef.current.getContext("2d");
+              drawPose(ctx, poses[0], primary.level);
+            }
 
             totalRef.current += 1;
             setTotalFrames(totalRef.current);
@@ -159,7 +257,6 @@ export default function PostureCamera({ isPaused, isFullscreen }) {
             }
             setBadPostureTime(newBadTime);
 
-            // Warm encouraging persistent-issue toast
             if (newBadTime > 150 && newBadTime % 150 === 1) {
               const issueNames = issues.map((i) => i.label.toLowerCase()).join(" & ");
               showToast(getEncouragingMessage(issueNames));
@@ -349,6 +446,38 @@ export default function PostureCamera({ isPaused, isFullscreen }) {
               </div>
             )}
           </div>
+
+          {/* ── Interactive Evaluation & Simulation Controls ── */}
+          {isSimMode && (
+            <div className="sim-toolbar">
+              <div className="sim-toolbar-header">
+                <span className="sim-title">Interactive Simulator Mode</span>
+                <span className="sim-author">Shaikh Mohammad Warsi</span>
+              </div>
+              <div className="sim-presets-grid">
+                {DEMO_PRESETS.map((p) => (
+                  <button
+                    key={p.id}
+                    className={`sim-preset-btn ${activePreset === p.id ? "active" : ""}`}
+                    onClick={() => setActivePreset(p.id)}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+              {initError && (
+                <div className="sim-status-banner">
+                  <span className="sim-status-text">{initError}</span>
+                  <button
+                    className="sim-reload-btn"
+                    onClick={() => window.location.reload()}
+                  >
+                    Retry Camera
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ── Right Panel (Dashboard) ── */}
