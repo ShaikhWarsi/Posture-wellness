@@ -5,7 +5,7 @@ Student Name: Shaikh Mohammad Warsi
 Course: Computer Vision (Flipped Course Evaluation)  
 Platform: VITyarthi  
 Submission Deadline: September 18, 2026  
-Repository Link: https://github.com/shaikh-mohammad-warsi/posture-ai  
+Repository Link: https://github.com/ShaikhWarsi/Posture-wellness  
 
 ---
 

@@ -2,7 +2,7 @@
 
 Author: Shaikh Mohammad Warsi  
 Course: Computer Vision (Flipped Course Evaluation)  
-Submission URL: https://github.com/shaikh-mohammad-warsi/posture-ai  
+Submission URL: https://github.com/ShaikhWarsi/Posture-wellness  
 Course Platform: VITyarthi  
 
 ---
@@ -131,8 +131,8 @@ Check your node installation by running:
 
 ### 1. Clone this repository
 
-    git clone https://github.com/shaikh-mohammad-warsi/posture-ai.git
-    cd posture-ai
+    git clone https://github.com/ShaikhWarsi/Posture-wellness.git
+    cd Posture-wellness
 
 ### 2. Install dependencies
 
